@@ -959,7 +959,7 @@ DOMAINS = {
 DISPLAY_CATEGORIES = {
     'automation': 'ACTIVITY_TRIGGER',
     'input_boolean': 'SWITCH',
-    'input_slider': 'SWITCH',
+    'input_number': 'SWITCH',
     'light': 'LIGHT',
     'media_player': 'TV'
 }
