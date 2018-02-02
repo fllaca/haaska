@@ -256,8 +256,37 @@ class Alexa(object):
             self.entity.set_volume(volume)
             self.context_properties.append({
                 "namespace": "Alexa.Speaker",
-                "name": "SetVolume",
+                "name": "volume",
                 "value": volume,
+                "timeOfSample": datetime.datetime.utcnow().isoformat(),
+                "uncertaintyInMilliseconds": 200
+            })
+
+        def AdjustVolume(self):
+            delta = self.payload['volume']
+            val = self.entity.get_volume()
+            val += delta
+            if val < 0.0:
+                val = 0
+            elif val >= 100.0:
+                val = 100.0
+            # volumeDefault = self.payload['volumeDefault']
+            self.entity.set_volume(val)
+            self.context_properties.append({
+                "namespace": "Alexa.Speaker",
+                "name": "volume",
+                "value": val,
+                "timeOfSample": datetime.datetime.utcnow().isoformat(),
+                "uncertaintyInMilliseconds": 200
+            })
+
+        def SetMute(self):
+            is_volume_muted = self.payload['mute']
+            self.entity.volume_mute(is_volume_muted)
+            self.context_properties.append({
+                "namespace": "Alexa.Speaker",
+                "name": "muted",
+                "value": is_volume_muted,
                 "timeOfSample": datetime.datetime.utcnow().isoformat(),
                 "uncertaintyInMilliseconds": 200
             })
@@ -616,6 +645,12 @@ class Entity(object):
                         "supported": [
                             {
                                 "name": "SetVolume"
+                            },
+                            {
+                                "name": "AdjustVolume"
+                            },
+                            {
+                                "name": "SetMute"
                             }
                         ],
                         "proactivelyReported": True,
@@ -859,7 +894,7 @@ class MediaPlayerEntity(ToggleEntity):
     def set_percentage(self, val):
         vol = val / 100.0
         self._call_service('media_player/volume_set', {'volume_level': vol})
-    
+
     def get_volume(self):
         state = self.ha.get('states/' + self.entity_id)
         vol = state['attributes']['volume_level']
@@ -868,6 +903,10 @@ class MediaPlayerEntity(ToggleEntity):
     def set_volume(self, val):
         vol = val / 100.0
         self._call_service('media_player/volume_set', {'volume_level': vol})
+
+    def volume_mute(self, is_volume_muted):
+        self._call_service('media_player/volume_mute',
+                           {'is_volume_muted': is_volume_muted})
 
 
 class ClimateEntity(Entity):
